@@ -1554,6 +1554,10 @@ select {
   height: 2rem;
 }
 
+.h-80 {
+  height: 20rem;
+}
+
 .h-95-px {
   height: 95px;
 }
@@ -2762,6 +2766,11 @@ select {
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
 }
 
+.bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(59 130 246 / var(--tw-bg-opacity));
+}
+
 .bg-emerald-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(167 243 208 / var(--tw-bg-opacity));
@@ -3066,6 +3075,10 @@ select {
 
 .p-5 {
   padding: 1.25rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
 }
 
 .p-8 {
@@ -4626,15 +4639,7 @@ select {
     width: 25%;
   }
 
-  .xl\:w-4\/12 {
-    width: 33.333333%;
-  }
-
   .xl\:w-6\/12 {
     width: 50%;
-  }
-
-  .xl\:w-8\/12 {
-    width: 66.666667%;
   }
 }

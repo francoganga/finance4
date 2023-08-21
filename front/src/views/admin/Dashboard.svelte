@@ -1,32 +1,26 @@
 <script>
-  // core components
+
+async function handleSubmit(e) {
+    e.preventDefault();
+
+    const url = new URL(e.target.action)
+    const formData = new FormData(e.target);
+
+    const res = await (await fetch(url, {
+        method: "POST",
+        body: formData
+    })).text()
+
+
+    console.log({res})
+}
+
 </script>
 
-<div>
-  <div class="flex flex-wrap">
-    <div class="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-    </div>
-    <div class="w-full xl:w-4/12 px-4">
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-    </div>
-  </div>
-  <div class="flex flex-wrap mt-4">
-    <div class="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
-    </div>
-    <div class="w-full xl:w-4/12 px-4">
-      <p>Hello world!</p>
-      <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-        <p>Hello world!</p>
-    </div>
-  </div>
+<div class="h-80 p-6">
+    <form on:submit={handleSubmit} action="/file" method="POST" enctype="multipart/form-data">
+        <label for="file">Files</label>
+        <input name="files" multiple="true" type="file" />
+        <input class="rounded bg-blue-500 py-2 px-4 text-white" type="submit" />
+    </form>
 </div>

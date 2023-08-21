@@ -5,10 +5,11 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"portal/pkg/utils"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
 )
 
 func main() {
@@ -27,10 +28,30 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	r.Get("/hw", func(w http.ResponseWriter, r *http.Request) {
-		render.JSON(w, r, map[string]string{
-			"message": "Hello, World!",
-		})
+	r.Post("/file", func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseMultipartForm(32 << 20)
+
+		if err != nil {
+			w.Write([]byte("Error: " + err.Error()))
+			return
+		}
+
+		files := r.MultipartForm.File["files"]
+
+		for _, file := range files {
+			matches, err := utils.GetMatchesFromFile(file)
+
+			if err != nil {
+				w.Write([]byte("Error: " + err.Error()))
+				return
+			}
+
+			for _, line := range matches {
+				fmt.Println(strings.Replace(line, "\n", "\\n", -1))
+			}
+		}
+
+		w.Write([]byte("success"))
 	})
 	templ, err := template.New("base.gohtml").ParseFiles("templates/base.gohtml")
 
