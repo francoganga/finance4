@@ -1,12 +1,14 @@
 package main
 
 import (
+	"database/sql"
+	"finance/pkg/models"
+	"finance/pkg/parser"
+	"finance/pkg/utils"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os"
-	"portal/pkg/utils"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -46,8 +48,45 @@ func main() {
 				return
 			}
 
+			db, err := sql.Open("sqlite3", "file:app.db?cache=shared&mode=memory")
+
+			fmt.Println("opened db")
+
+			if err != nil {
+				panic(err)
+			}
+
+			queries := models.New(db)
+
 			for _, line := range matches {
-				fmt.Println(strings.Replace(line, "\n", "\\n", -1))
+				p := parser.FromInput(line)
+
+				consu := p.ParseConsumo()
+
+				if len(p.Errors()) > 0 {
+
+					msg := ""
+
+					for _, e := range p.Errors() {
+						msg += e
+					}
+
+					w.Write([]byte("Error: " + msg))
+					return
+				}
+
+				err := queries.CreateTransaction(r.Context(), models.CreateTransactionParams{
+					Date:        consu.Date,
+					Code:        sql.NullString{String: consu.Code, Valid: true},
+					Description: consu.Description,
+					Amount:      int64(consu.Amount),
+				})
+
+				if err != nil {
+					w.Write([]byte("Error: " + err.Error()))
+					return
+				}
+
 			}
 		}
 

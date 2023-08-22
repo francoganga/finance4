@@ -1,8 +1,8 @@
 package parser
 
 import (
+	"finance/pkg/lexer"
 	"fmt"
-	"github.com/francoganga/pagoda_bun/pkg/internal/lexer"
 	"strconv"
 )
 
@@ -205,3 +205,4 @@ func (p *Parser) ParseConsumo() *ConsumoDto {
 
 	return c
 }
+
