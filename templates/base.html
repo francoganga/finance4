@@ -11,10 +11,10 @@
     <body class="text-slate-700 antialiased 100vh">
         <div class="100vh" id="app"></div>
     </body>
-    {{ if eq .Mode "dev" }}
+    {% if mode == "dev" %}
     <script defer src="//localhost:8001/main.js"></script>
     <script>new EventSource('http://localhost:8001/esbuild').addEventListener('change', () => location.reload())</script>
-    {{ else }}
+    {% else %}
     <script defer src="/static/main.js"></script>
-    {{ end }}
+    {% endif %}
 </html>

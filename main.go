@@ -6,10 +6,10 @@ import (
 	"finance/pkg/parser"
 	"finance/pkg/utils"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 
+	"github.com/flosch/pongo2/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
@@ -95,21 +95,11 @@ func main() {
 
 		w.Write([]byte("success"))
 	})
-	templ, err := template.New("base.gohtml").ParseFiles("templates/base.gohtml")
-
-	if err != nil {
-		panic(err)
-	}
+	templ := pongo2.Must(pongo2.FromFile("templates/base.html"))
 
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 
-		type TemplGlobals struct {
-			Mode string
-		}
-
-		err := templ.Execute(w, TemplGlobals{
-			Mode: appEnv,
-		})
+		err := templ.ExecuteWriter(pongo2.Context{"mode": appEnv}, w)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
