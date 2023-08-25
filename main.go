@@ -12,6 +12,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -42,13 +44,14 @@ func main() {
 
 		for _, file := range files {
 			matches, err := utils.GetMatchesFromFile(file)
+			fmt.Printf("matches_len=%v\n", len(matches))
 
 			if err != nil {
 				w.Write([]byte("Error: " + err.Error()))
 				return
 			}
 
-			db, err := sql.Open("sqlite3", "file:app.db?cache=shared&mode=memory")
+			db, err := sql.Open("sqlite", "file:app.db?cache=shared")
 
 			fmt.Println("opened db")
 

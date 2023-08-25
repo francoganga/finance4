@@ -1,8 +1,8 @@
 package parser
 
 import (
+	"finance/pkg/lexer"
 	"fmt"
-	"github.com/francoganga/pagoda_bun/pkg/internal/lexer"
 	"testing"
 )
 
@@ -199,3 +199,4 @@ func checkParserErrors(t *testing.T, p *Parser) {
 
 	t.FailNow()
 }
+
