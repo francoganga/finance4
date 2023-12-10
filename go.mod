@@ -2,11 +2,16 @@ module finance
 
 go 1.21.0
 
-require github.com/go-chi/chi/v5 v5.0.10
+require (
+	github.com/flosch/pongo2/v6 v6.0.0
+	github.com/go-chi/chi/v5 v5.0.10
+	github.com/go-chi/render v1.0.3
+	modernc.org/sqlite v1.25.0
+)
 
 require (
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/flosch/pongo2/v6 v6.0.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
@@ -22,7 +27,6 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.6.0 // indirect
 	modernc.org/opt v0.1.3 // indirect
-	modernc.org/sqlite v1.25.0 // indirect
 	modernc.org/strutil v1.1.3 // indirect
 	modernc.org/token v1.0.1 // indirect
 )

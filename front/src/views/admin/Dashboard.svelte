@@ -9,7 +9,7 @@ async function handleSubmit(e) {
     const res = await (await fetch(url, {
         method: "POST",
         body: formData
-    })).text()
+    })).json()
 
 
     console.log({res})

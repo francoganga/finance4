@@ -12,9 +12,20 @@ import (
 	"github.com/flosch/pongo2/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 
 	_ "modernc.org/sqlite"
 )
+
+type Handler func(http.ResponseWriter, *http.Request) error
+
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := h(w, r); err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, err)
+		return
+	}
+}
 
 func main() {
 
@@ -32,12 +43,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	r.Post("/file", func(w http.ResponseWriter, r *http.Request) {
+	r.Method("POST", "/file", Handler(func(w http.ResponseWriter, r *http.Request) error {
 		err := r.ParseMultipartForm(32 << 20)
 
 		if err != nil {
-			w.Write([]byte("Error: " + err.Error()))
-			return
+			return err
 		}
 
 		files := r.MultipartForm.File["files"]
@@ -47,8 +57,7 @@ func main() {
 			fmt.Printf("matches_len=%v\n", len(matches))
 
 			if err != nil {
-				w.Write([]byte("Error: " + err.Error()))
-				return
+				return err
 			}
 
 			db, err := sql.Open("sqlite", "file:app.db?cache=shared")
@@ -56,7 +65,7 @@ func main() {
 			fmt.Println("opened db")
 
 			if err != nil {
-				panic(err)
+				return err
 			}
 
 			queries := models.New(db)
@@ -74,8 +83,7 @@ func main() {
 						msg += e
 					}
 
-					w.Write([]byte("Error: " + msg))
-					return
+					return err
 				}
 
 				err := queries.CreateTransaction(r.Context(), models.CreateTransactionParams{
@@ -86,15 +94,17 @@ func main() {
 				})
 
 				if err != nil {
-					w.Write([]byte("Error: " + err.Error()))
-					return
+					return err
 				}
-
 			}
 		}
 
-		w.Write([]byte("success"))
-	})
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, map[string]string{"status": "ok"})
+
+		return nil
+	}))
+
 	templ := pongo2.Must(pongo2.FromFile("templates/base.html"))
 
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
