@@ -11,5 +11,5 @@ CREATE TABLE transactions (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE transaction;
+DROP TABLE transactions;
 -- +goose StatementEnd

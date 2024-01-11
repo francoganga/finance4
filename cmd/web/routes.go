@@ -1,10 +1,8 @@
 package main
 
 import (
-	"finance/templates"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -16,7 +14,11 @@ func (a *application) routes() *chi.Mux {
 
 	r.Use(middleware.Logger)
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
-	r.Get("/", templ.Handler(templates.Base()).ServeHTTP)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+
+		a.templates.Render("home.html", w, nil)
+	})
+	r.Get("/dashboard", a.Dashboard)
 
 	r.Post("/file", a.HandleFile)
 

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+    <ul>
+        {% for period in periods %}
+        <li>
+            period: {{period.Format("01-2006")}}
+        </li>
+        {% endfor %}
+    </ul>
+
+
+{% endblock %}

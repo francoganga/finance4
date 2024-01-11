@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/francoganga/pongoe"
 	_ "modernc.org/sqlite"
 )
 
@@ -22,10 +23,11 @@ type config struct {
 }
 
 type application struct {
-	config  config
-	logger  *log.Logger
-	db      *sql.DB
-	queries *models.Queries
+	config    config
+	logger    *log.Logger
+	db        *sql.DB
+	queries   *models.Queries
+	templates *pongoe.Templates
 }
 
 func main() {
@@ -41,6 +43,8 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
+	tts := pongoe.LoadTemplates("templates")
+
 	db, err := sql.Open("sqlite", "file:app.db?cache=shared")
 
 	if err != nil {
@@ -52,10 +56,11 @@ func main() {
 	queries := models.New(db)
 
 	app := &application{
-		config:  cfg,
-		logger:  logger,
-		db:      db,
-		queries: queries,
+		config:    cfg,
+		logger:    logger,
+		db:        db,
+		queries:   queries,
+		templates: tts,
 	}
 
 	srv := &http.Server{

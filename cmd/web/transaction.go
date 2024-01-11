@@ -7,7 +7,9 @@ import (
 	"finance/internal/utils"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/flosch/pongo2/v6"
 	"github.com/go-chi/render"
 )
 
@@ -19,7 +21,11 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 		a.errorResponse(w, r, 500, "Error")
 	}
 
-	files := r.MultipartForm.File["files"]
+	files, ok := r.MultipartForm.File["files"]
+
+	if !ok {
+		a.logger.Fatal("no files")
+	}
 
 	for _, file := range files {
 		matches, err := utils.GetMatchesFromFile(file)
@@ -47,8 +53,16 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			err := a.queries.CreateTransaction(r.Context(), models.CreateTransactionParams{
-				Date:        consu.Date,
+			pd, err := time.Parse("02/01/06", consu.Date)
+
+			if err != nil {
+				a.logError(r, err)
+				a.errorResponse(w, r, 500, "Error")
+				return
+			}
+
+			err = a.queries.CreateTransaction(r.Context(), models.CreateTransactionParams{
+				Date:        pd.Format("2006-01-02"),
 				Code:        sql.NullString{String: consu.Code, Valid: true},
 				Description: consu.Description,
 				Amount:      int64(consu.Amount),
@@ -63,5 +77,41 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, map[string]string{"status": "ok"})
+}
+
+func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
+
+	var periods []time.Time
+
+	rows, err := a.db.Query("select distinct strftime('%Y-%m', date) as m from transactions order by date desc")
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var val string
+
+		err := rows.Scan(&val)
+		if err != nil {
+			a.errorResponse(w, r, 500, err.Error())
+			return
+		}
+
+		p, err := time.Parse("2006-01", val)
+		if err != nil {
+			a.errorResponse(w, r, 500, err.Error())
+			return
+		}
+
+		periods = append(periods, p)
+
+	}
+
+	a.templates.Render("dashboard.html", w, pongo2.Context{
+		"periods": periods,
+	})
 }
 
