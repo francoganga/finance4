@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"finance/pkg/lexer"
+	"finance/internal/lexer"
 	"fmt"
 	"strconv"
 )
