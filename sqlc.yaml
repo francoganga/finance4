@@ -6,4 +6,10 @@ sql:
     gen:
       go:
         package: "models"
-        out: "pkg/models"
+        out: "internal/models"
+        overrides:
+          - column: "transactions.date"
+            go_type:
+              import: "finance/internal/types"
+              package: "types"
+              type: "Date"

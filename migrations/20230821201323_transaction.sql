@@ -5,7 +5,8 @@ CREATE TABLE transactions (
     date TEXT NOT NULL,
     code TEXT,
     description TEXT NOT NULL,
-    amount INTEGER NOT NULL
+    amount INTEGER NOT NULL,
+    balance INTEGER NOT NULL
 );
 -- +goose StatementEnd
 

@@ -19,6 +19,7 @@ func (a *application) routes() *chi.Mux {
 		a.templates.Render("home.html", w, nil)
 	})
 	r.Get("/dashboard", a.Dashboard)
+	r.Get("/transactions/new", a.NewTransaction)
 
 	r.Post("/file", a.HandleFile)
 

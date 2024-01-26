@@ -3,14 +3,28 @@
 
 
 {% block content %}
+    <div class="py-5">
+        <h1 class="text-xl">
+            CURRENT BALANCE: {{ balance }}
+        </h1>
 
-    <ul>
-        {% for period in periods %}
-        <li>
-            period: {{period.Format("01-2006")}}
-        </li>
-        {% endfor %}
-    </ul>
+        <ul>
+            {% for period in periods %}
+            <li>
+                period: {{period.Format("01-2006")}}
+            </li>
+            {% endfor %}
+        </ul>
 
+        <hr>
+
+        <ul>
+            {% for t in lts %}
+            <li>
+                t: {{t.Balance}} - {{ t.Description }} - {{ t.Date.Format("02/01/2006") }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
 {% endblock %}

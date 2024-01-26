@@ -1,0 +1,36 @@
+{% extends '../base.html' %}
+
+
+{% block content %}
+    <h1 class="text-xl">Transaction Form</h1>
+
+    <form action="" method="post">
+        <div class="w-full">
+            <div class="w-1/2 mb-3">
+                <div class="flex flex-col">
+                    <label for="date">Fecha</label>
+                    <input class="text-gray-700 border border-gray-200 p-2" id="date" value="{{date}}" name="date" type="date">
+                </div>
+            </div>
+            <div class="w-1/2 mb-3">
+                <div class="flex flex-col">
+                    <label for="amount">Amount</label>
+                    <input id="amount" class="text-gray-700 border border-gray-200 p-3" type="text">
+                </div>
+            </div>
+            <div class="w-1/2 mb-3">
+                <div class="flex flex-col">
+                    <label for="description">Description</label>
+                    <input name="description" class="text-gray-700 border border-gray-200 p-2" type="text">
+                </div>
+            </div>
+            <div class="w-1/2 mb-3">
+                <div class="flex flex-col">
+                    <label for="code">Code</label>
+                    <input name="code" class="text-gray-700 border border-gray-200 p-2" type="text">
+                </div>
+            </div>
+            <button class="bg-red-500 px-3 py-2 text-white rounded hover:bg-red-600" type="submit">Create</button>
+        </div>
+    </form>
+{% endblock %}

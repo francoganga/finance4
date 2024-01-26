@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"finance/internal/models"
 	"finance/internal/parser"
+	"finance/internal/types"
 	"finance/internal/utils"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -29,7 +29,6 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 	for _, file := range files {
 		matches, err := utils.GetMatchesFromFile(file)
-		fmt.Printf("matches_len=%v\n", len(matches))
 
 		if err != nil {
 			a.errorResponse(w, r, 500, "Error")
@@ -62,10 +61,11 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 			}
 
 			err = a.queries.CreateTransaction(r.Context(), models.CreateTransactionParams{
-				Date:        pd.Format("2006-01-02"),
+				Date:        *types.NewDate(pd),
 				Code:        sql.NullString{String: consu.Code, Valid: true},
 				Description: consu.Description,
 				Amount:      int64(consu.Amount),
+				Balance:     int64(consu.Balance),
 			})
 
 			if err != nil {
@@ -109,9 +109,31 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 		periods = append(periods, p)
 
 	}
+	// latest transactions
+	//select * from transactions where strftime('%Y-%m', date) = (select strftime('%Y-%m', date) from transactions order by date desc limit 1) order by date desc limit 1
+
+	lts, err := a.queries.LastMonthTransactions(r.Context())
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
 
 	a.templates.Render("dashboard.html", w, pongo2.Context{
 		"periods": periods,
+		"lts":     lts,
+		"balance": lts[len(lts)-1].Balance,
 	})
+}
+
+func (a *application) NewTransaction(w http.ResponseWriter, r *http.Request) {
+
+	cd := time.Now().Format("2006-01-02")
+
+	if err := a.templates.Render("transaction/new.html", w, pongo2.Context{
+		"date": cd,
+	}); err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+	}
+
 }
 

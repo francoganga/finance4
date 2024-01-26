@@ -8,8 +8,16 @@
               href="/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" />
         <link rel="stylesheet" href="/static/main.css" />
     </head>
-    <body class="text-slate-700 antialiased 100vh">
-        {% block content %}
-        {% endblock %}
+    <body class="text-slate-700 antialiased">
+        <div class="flex">
+            <aside class="w-60">sidebar</aside>
+            <main class="w-full">
+                <nav class="bg-red-500 p-3 text-white">NavBar</nav>
+                <div>
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </main>
+        </div>
     </body>
 </html>
