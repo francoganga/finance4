@@ -9,6 +9,8 @@ github.com/flosch/pongo2/v6 v6.0.0 h1:lsGru8IAzHgIAw6H2m4PCyleO58I40ow6apih0WprM
 github.com/flosch/pongo2/v6 v6.0.0/go.mod h1:CuDpFm47R0uGGE7z13/tTlt1Y6zdxvr2RLT5LJhsHEU=
 github.com/francoganga/pongoe v0.1.2 h1:E/PhZ8vRu7JycScI65O0oHVAMyyXutiI+EFFs7q3GVo=
 github.com/francoganga/pongoe v0.1.2/go.mod h1:HkbNC+9xP36BriO5J/9Mshka83mXFNR43nR7r1raw78=
+github.com/francoganga/ulari v0.1.0 h1:F2JncoEawYh1t8pw6zg9pS2ADDldX8JsLF0QdddYflI=
+github.com/francoganga/ulari v0.1.0/go.mod h1:j6TDS7HtQhqHPMPbc9rggQ1GzzRuaDm9BnD8m74Jpqs=
 github.com/go-chi/chi/v5 v5.0.10 h1:rLz5avzKpjqxrYwXNfmjkrYYXOyLJd37pz53UFHC6vk=
 github.com/go-chi/chi/v5 v5.0.10/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/go-chi/render v1.0.3 h1:AsXqd2a1/INaIfUSKq3G5uA8weYx20FOsM7uSoCyyt4=

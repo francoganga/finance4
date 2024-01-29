@@ -14,6 +14,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/flosch/pongo2/v6 v6.0.0 // indirect
 	github.com/francoganga/pongoe v0.1.2 // indirect
+	github.com/francoganga/ulari v0.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
@@ -33,3 +34,5 @@ require (
 )
 
 replace github.com/francoganga/pongoe => /home/fganga/projects/personal/pongoe
+
+replace github.com/francoganga/ulari => /home/fganga/projects/personal/ulari
