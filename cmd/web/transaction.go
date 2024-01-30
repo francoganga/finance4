@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"finance/internal/models"
 	"finance/internal/parser"
 	"finance/internal/types"
@@ -135,5 +136,15 @@ func (a *application) NewTransaction(w http.ResponseWriter, r *http.Request) {
 		a.errorResponse(w, r, 500, err.Error())
 	}
 
+}
+
+func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
+	lts, err := a.queries.LastMonthTransactions(r.Context())
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	json.NewEncoder(w).Encode(lts)
 }
 

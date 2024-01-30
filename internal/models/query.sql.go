@@ -136,3 +136,4 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 	}
 	return items, nil
 }
+

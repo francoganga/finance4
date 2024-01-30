@@ -15,13 +15,21 @@ func (a *application) routes() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-
 		a.templates.Render("home.html", w, nil)
 	})
 	r.Get("/dashboard", a.Dashboard)
 	r.Get("/transactions/new", a.NewTransaction)
-
 	r.Post("/file", a.HandleFile)
+
+	api := chi.NewRouter()
+	api.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+		return
+	})
+
+	api.Get("/lmt", a.Lmt)
+
+	r.Mount("/api", api)
 
 	return r
 }
