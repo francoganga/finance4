@@ -1,107 +1,203 @@
 package parser
 
 import (
-	"finance/internal/lexer"
 	"fmt"
 	"strconv"
 )
 
 type Parser struct {
-	l *lexer.Lexer
-
-	errors []string
-	buffer []lexer.Token
-
-	curToken  lexer.Token
-	peekToken lexer.Token
+	input        string
+	position     int
+	readPosition int
+	ch           byte
 }
 
-func FromInput(input string) *Parser {
-	return New(lexer.New(input))
+func New(input string) *Parser {
+	l := &Parser{input: input}
+	l.readChar()
+
+	return l
 }
 
-func New(l *lexer.Lexer) *Parser {
-
-	p := &Parser{l: l}
-
-	p.nextToken()
-	p.nextToken()
-
-	return p
-}
-
-func (p *Parser) nextToken() {
-	p.curToken = p.peekToken
-	p.peekToken = p.l.NextToken()
-	p.buffer = append(p.buffer, p.peekToken)
-}
-
-func (p *Parser) Errors() []string {
-	return p.errors
-}
-
-func (p *Parser) expectPeek(t lexer.TokenType) bool {
-	if p.peekTokenIs(t) {
-		p.nextToken()
-		return true
+func (p *Parser) readChar() {
+	if p.readPosition >= len(p.input) {
+		p.ch = 0
 	} else {
-		p.peekError(t)
-		return false
+		p.ch = p.input[p.readPosition]
+	}
+
+	p.position = p.readPosition
+	p.readPosition += 1
+}
+
+func (p *Parser) skipWhitespace() {
+	for p.ch == ' ' || p.ch == '\t' || p.ch == '\n' || p.ch == '\r' {
+		p.readChar()
 	}
 }
 
-func (p *Parser) peekTokenIs(t lexer.TokenType) bool {
-	return p.peekToken.Type == t
+func isLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
-func (p *Parser) curTokenIs(t lexer.TokenType) bool {
-	return p.curToken.Type == t
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
 }
 
-func (p *Parser) peekError(t lexer.TokenType) {
-	context := ""
-
-	for _, m := range p.buffer {
-		context += m.Literal + " "
+// Reads N chars
+func (p *Parser) readNChar(n int) {
+	for i := 1; i <= n; i++ {
+		p.readChar()
 	}
 
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead. ON: %s\n",
-		t, p.peekToken.Type, context)
-	p.errors = append(p.errors, msg)
 }
 
-func (p *Parser) parseDate() string {
-
-	time_str := p.curToken.Literal
-
-	if !p.expectPeek(lexer.SLASH) {
-		return ""
+func (p *Parser) readNumber() string {
+	position := p.position
+	for isDigit(p.ch) {
+		p.readChar()
 	}
-
-	time_str += p.curToken.Literal
-
-	if !p.expectPeek(lexer.INT) {
-		return ""
-	}
-
-	time_str += p.curToken.Literal
-
-	if !p.expectPeek(lexer.SLASH) {
-		return ""
-	}
-
-	time_str += p.curToken.Literal
-
-	if !p.expectPeek(lexer.INT) {
-		return ""
-	}
-
-	time_str += p.curToken.Literal
-
-	return time_str
+	return p.input[position:p.position]
 }
 
-type ConsumoDto struct {
+func (p *Parser) peekChar() byte {
+	if p.readPosition >= len(p.input) {
+		return 0
+	} else {
+		return p.input[p.readPosition]
+	}
+}
+
+// Peeks char with offset from readPosition
+func (p *Parser) peekCharAt(offset int) byte {
+
+	if p.position+offset >= len(p.input) {
+		return 0
+	}
+
+	return p.input[p.position+offset]
+}
+
+func (p *Parser) peekTill(till byte, fun func(ch byte) bool) bool {
+	cv := p.position
+	nv := p.position + 1
+
+	for p.input[cv] != till {
+
+		if fun(p.input[cv]) {
+			return true
+		}
+
+		if nv >= len(p.input) {
+			break
+		}
+
+		cv = nv
+		nv += 1
+	}
+
+	return false
+}
+
+func (p *Parser) readDate() string {
+	pos := p.position
+
+	for isDigit(p.ch) || p.ch == '/' {
+		p.readChar()
+	}
+
+	return p.input[pos:p.position]
+}
+
+func (p *Parser) ParseDate() string {
+	p.skipWhitespace()
+
+	if isDigit(p.ch) && p.peekCharAt(2) == '/' {
+		return p.readDate()
+	}
+
+	return ""
+}
+
+func (p *Parser) ParseCode() string {
+	p.skipWhitespace()
+
+	if isDigit(p.ch) {
+		pos := p.position
+
+		for isDigit(p.ch) {
+			p.readChar()
+		}
+
+		return p.input[pos:p.position]
+	}
+
+	return ""
+}
+
+func (p *Parser) ParseSentence() string {
+	p.skipWhitespace()
+
+	if isLetter(p.ch) {
+		return p.readSentence()
+	}
+
+	return ""
+}
+
+func (p *Parser) readSentence() string {
+	position := p.position
+
+	for isLetter(p.ch) || p.ch == ' ' || isDigit(p.ch) {
+		p.readChar()
+		if p.ch == ' ' && p.peekChar() == ' ' {
+			break
+		}
+
+		if !isLetter(p.peekChar()) && p.peekChar() != ' ' && p.peekChar() != 0 {
+			p.readChar()
+			if p.position < len(p.input) {
+				p.readChar()
+			}
+		}
+	}
+
+	// fmt.Printf("start:=%d, end=%d\n", position, p.position)
+
+	return p.input[position:p.position]
+
+}
+
+func (p *Parser) ParseAmount() (int, error) {
+	p.skipWhitespace()
+
+	if isDigit(p.ch) || p.ch == '-' || p.ch == '$' || p.ch == 'U' {
+		return p.readAmount()
+	}
+
+	return 0, fmt.Errorf("Expected int but got %c", p.ch)
+
+}
+
+func (p *Parser) readAmount() (int, error) {
+	val := ""
+
+	for isDigit(p.ch) || p.ch == '-' || p.ch == '.' || p.ch == ',' || p.ch == '$' || p.ch == ' ' || p.ch == 'U' || p.ch == 'S' {
+
+		if p.ch == ' ' && p.peekChar() == ' ' {
+			break
+		}
+
+		if isDigit(p.ch) || p.ch == '-' {
+			val += string(p.ch)
+		}
+		p.readChar()
+	}
+
+	return strconv.Atoi(val)
+}
+
+type Consumo struct {
 	Date        string
 	Code        string
 	Description string
@@ -109,100 +205,31 @@ type ConsumoDto struct {
 	Balance     int
 }
 
-func (p *Parser) parseAmount() int {
+func (p *Parser) Parse() (Consumo, error) {
+	consumo := Consumo{}
 
-	str_code := ""
+	consumo.Date = p.ParseDate()
+	consumo.Code = p.ParseCode()
+	consumo.Description = p.ParseSentence()
 
-	if p.peekTokenIs(lexer.MINUS) {
-		p.nextToken()
-		str_code += p.curToken.Literal
-	}
-
-	// TODO: For now ignore USD token
-	// Maybe i would want to handle the different currencies in the backend
-	// Investigate how to store different currencies in db
-	if p.peekTokenIs(lexer.USD) {
-		p.nextToken()
-	}
-
-	if p.peekTokenIs(lexer.DOLLAR) {
-		p.nextToken()
-	}
-
-	if !p.expectPeek(lexer.INT) {
-		return 0
-	}
-
-	str_code += p.curToken.Literal
-
-	if p.peekTokenIs(lexer.DOT) {
-		p.nextToken()
-
-		if !p.expectPeek(lexer.INT) {
-			return 0
-		}
-
-		str_code += p.curToken.Literal
-	}
-
-	amount, err := strconv.Atoi(str_code)
+	amount, err := p.ParseAmount()
 
 	if err != nil {
-		return 0
+		return consumo, err
 	}
 
-	amount = amount * 100
+	consumo.Amount = amount
 
-	if p.peekTokenIs(lexer.COMMA) {
-		p.nextToken()
-		if !p.expectPeek(lexer.INT) {
-			return 0
-		}
+	balance, err := p.ParseAmount()
 
-		decimal, err := strconv.Atoi(p.curToken.Literal)
-
-		if err != nil {
-			return 0
-		}
-
-		if amount < 0 {
-			amount -= decimal
-		} else {
-			amount += decimal
-		}
-
+	if err != nil {
+		return consumo, err
 	}
 
-	return amount
-}
+	consumo.Balance = balance
 
-func (p *Parser) ParseConsumo() *ConsumoDto {
-	c := &ConsumoDto{}
+	consumo.Description += " " + p.ParseSentence()
 
-	date := p.parseDate()
-
-	c.Date = date
-
-	if p.peekTokenIs(lexer.INT) {
-		p.nextToken()
-		c.Code = p.curToken.Literal
-	}
-
-	if !p.expectPeek(lexer.DESC) {
-		return nil
-	}
-
-	c.Description = p.curToken.Literal
-
-	c.Amount = p.parseAmount()
-
-	c.Balance = p.parseAmount()
-
-	if p.peekTokenIs(lexer.DESC) {
-		p.nextToken()
-		c.Description += ": " + p.curToken.Literal
-	}
-
-	return c
+	return consumo, nil
 }
 

@@ -37,18 +37,10 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, line := range matches {
-			p := parser.FromInput(line)
+			p := parser.New(line)
 
-			consu := p.ParseConsumo()
-
-			if len(p.Errors()) > 0 {
-
-				msg := ""
-
-				for _, e := range p.Errors() {
-					msg += e
-				}
-
+			consu, err := p.Parse()
+			if err != nil {
 				a.errorResponse(w, r, 500, "Error")
 				return
 			}

@@ -57,8 +57,6 @@ func GetMatchesFromFile(file *multipart.FileHeader) ([]string, error) {
 
 	re := regexp.MustCompile(`(?m)^([0-9]{2}/[0-9]{2}/[0-9]{2})\s+([0-9]+)\s+(.*?)\s{2,}(.*?)\s{2,}(.*)\n(.*)`)
 
-	fmt.Println(outb.String())
-
 	return re.FindAllString(outb.String(), -1), nil
 }
 
