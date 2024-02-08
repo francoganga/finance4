@@ -4,8 +4,8 @@
 {% block content %}
     <h1 class="text-xl">Transaction Form</h1>
 
-    {% for field in form.Fields %}
-            {{field.Html|safe}}
+    {% for key, val in form.Fields %}
+        {{ val.Render()|safe }}
     {% endfor %}
 
 

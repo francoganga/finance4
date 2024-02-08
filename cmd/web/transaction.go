@@ -5,13 +5,17 @@ import (
 	"encoding/json"
 	"finance/internal/models"
 	"finance/internal/parser"
+	"finance/internal/services"
 	"finance/internal/types"
 	"finance/internal/utils"
 	"net/http"
 	"time"
 
 	"github.com/flosch/pongo2/v6"
+	"github.com/francoganga/ulari"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/samber/lo"
 )
 
 func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +78,12 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 
-	var periods []time.Time
+	type period struct {
+		Link string
+		Text string
+	}
+
+	var periods []period
 
 	rows, err := a.db.Query("select distinct strftime('%Y-%m', date) as m from transactions order by date desc")
 	if err != nil {
@@ -99,7 +108,12 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		periods = append(periods, p)
+		period := period{
+			Text: p.Format("2006 - Jan"),
+			Link: p.Format("2006-01"),
+		}
+
+		periods = append(periods, period)
 
 	}
 	// latest transactions
@@ -111,19 +125,41 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	salary := lo.MaxBy(lts, func(a models.Transaction, b models.Transaction) bool {
+		return a.Amount > b.Amount
+	})
+
+	expenses := lo.Filter(lts, func(i models.Transaction, _ int) bool {
+		return i.Amount < 0
+	})
+
+	totalExpenses := lo.SumBy(expenses, func(i models.Transaction) int64 {
+		return i.Amount
+	})
+
+	remainingAmount := salary.Amount + totalExpenses
+
 	a.templates.Render("dashboard.html", w, pongo2.Context{
-		"periods": periods,
-		"lts":     lts,
-		"balance": lts[len(lts)-1].Balance,
+		"periods":         periods,
+		"lts":             lts,
+		"balance":         lts[len(lts)-1].Balance,
+		"salary":          salary.Amount / 100,
+		"expenses":        expenses,
+		"totalExpenses":   totalExpenses / 100,
+		"remainingAmount": remainingAmount / 100,
 	})
 }
 
 func (a *application) NewTransaction(w http.ResponseWriter, r *http.Request) {
 
-	cd := time.Now().Format("2006-01-02")
+	form := ulari.NewFormData()
+	now := time.Now().Format("2006-01-02")
+
+	form.Add(ulari.DateField("date", now, "p-2", "border", "border-gray-300"))
+	form.Add(ulari.StringField("name", "p-2", "border", "border-red-500", "focus:border-sky-400"))
 
 	if err := a.templates.Render("transaction/new.html", w, pongo2.Context{
-		"date": cd,
+		"form": form,
 	}); err != nil {
 		a.errorResponse(w, r, 500, err.Error())
 	}
@@ -138,5 +174,52 @@ func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(lts)
+}
+
+func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
+
+	period := chi.URLParam(r, "period")
+
+	if period == "" {
+		a.errorResponse(w, r, 500, "empty period")
+	}
+
+	query := "select * from transactions where strftime('%Y-%m', date) = ?"
+
+	rows, err := a.db.Query(query, period)
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	defer rows.Close()
+
+	var transactions []models.Transaction
+
+	for rows.Next() {
+		var transaction models.Transaction
+
+		err := rows.Scan(
+			&transaction.ID,
+			&transaction.Date,
+			&transaction.Code,
+			&transaction.Description,
+			&transaction.Amount,
+			&transaction.Balance,
+		)
+
+		if err != nil {
+			a.errorResponse(w, r, 500, err.Error())
+			return
+		}
+
+		transactions = append(transactions, transaction)
+	}
+
+	overview := services.GenerateOverview(transactions)
+
+	a.templates.Render("month_overview.html", w, pongo2.Context{
+		"overview": overview,
+	})
 }
 
