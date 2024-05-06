@@ -69,7 +69,7 @@ func (q *Queries) GetTransaction(ctx context.Context, id int64) (Transaction, er
 }
 
 const lastMonthTransactions = `-- name: LastMonthTransactions :many
-SELECT id, date, code, description, amount, balance FROM transactions WHERE strftime('%Y-%m', date) = (SELECT strftime('%Y-%m', date) FROM transactions order by date desc limit 1) ORDER BY date DESC
+SELECT id, date, code, description, amount, balance FROM transactions WHERE strftime('%Y-%m', date) = (SELECT strftime('%Y-%m', date) FROM transactions order by date desc limit 1) ORDER BY id
 `
 
 func (q *Queries) LastMonthTransactions(ctx context.Context) ([]Transaction, error) {
@@ -136,4 +136,3 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 	}
 	return items, nil
 }
-

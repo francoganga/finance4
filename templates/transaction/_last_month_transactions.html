@@ -1,0 +1,9 @@
+{% for transaction in transactions %}
+    <li class="py-2">
+        <div class="flex py-2 border-b">
+            <span class="w-3/5">{{transaction.Description}}</span>
+            <span class="w-1/5">{{transaction.Amount}}</span>
+            <span class="w-1/5">{{transaction.Code.String}}</span>
+        </div>
+    </li>
+{% endfor %}

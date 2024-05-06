@@ -2,12 +2,13 @@
 
 
 {% block scripts %}
+    <script src="/static/js/htmx.min.js"></script>
     <script src="/static/js/chartjs.js"></script>
     <script>
         const ctx = document.getElementById('barChart');
 
         fetch('/api/lmt').then(res => res.json()).then(data => initChart(data))
-        
+
         function initChart(data) {
             console.log({data})
             const labels = data.map(item => item.Date);
@@ -82,25 +83,30 @@
                 Transactions
               </h1>
 
-              <input placeholder=" &#xf002; Search transactions" class="w-full p-2 border border-gray-400 rounded-md" type="search" style="font-family:arial, fontawesome" />
+              <form>
+                <input
+                      name="search"
+                      placeholder=" &#xf002; Search transactions"
+                      class="w-full p-2 border border-gray-400 rounded-md"
+                      type="search"
+                      style="font-family:arial, fontawesome"
+
+                      hx-get="/dashboard"
+                      hx-trigger="search, keyup delay:300ms changed"
+                      hx-target="#transaction-list"
+                      hx-push-url="true"
+                      />
+              </form>
 
               <div class="flex py-1 border-b mt-6">
                   <span class="w-3/5 font-bold">Description</span>
                   <span class="w-1/5 font-bold">Amount</span>
                   <span class="w-1/5 font-bold">Code</span>
               </div>
-              <ul>
-                  {% for transaction in lts %}
-                  <li class="py-2">
-                      <div class="flex py-2 border-b">
-                          <span class="w-3/5">{{transaction.Description}}</span>
-                          <span class="w-1/5">{{transaction.Amount}}</span>
-                          <span class="w-1/5">{{transaction.Code.String}}</span>
-                      </div>
-                  </li>
-                  {% endfor %}
+              <ul id="transaction-list">
+                  {% include 'transaction/_last_month_transactions.html' %}
               </ul>
-              
+
 
             </div>
           </div>

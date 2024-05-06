@@ -8,6 +8,7 @@ import (
 	"finance/internal/services"
 	"finance/internal/types"
 	"finance/internal/utils"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -78,6 +79,29 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 
+	search := r.URL.Query().Get("search")
+
+	if hx := r.Header.Get("Hx-Request"); hx == "true" {
+		lmt, err := services.SearchLastMonthTransactions(search, a.db)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		fmt.Printf("len(lmt)=%#v\n", len(lmt))
+
+		err = a.templates.Render("transaction/_last_month_transactions.html", w, pongo2.Context{
+			"transactions": lmt,
+		})
+
+		if err != nil {
+			fmt.Println("error")
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		return
+	}
+
 	type period struct {
 		Link string
 		Text string
@@ -119,7 +143,7 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 	// latest transactions
 	//select * from transactions where strftime('%Y-%m', date) = (select strftime('%Y-%m', date) from transactions order by date desc limit 1) order by date desc limit 1
 
-	lts, err := a.queries.LastMonthTransactions(r.Context())
+	lts, err := services.SearchLastMonthTransactions(search, a.db)
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
 		return
@@ -141,7 +165,7 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	a.templates.Render("dashboard.html", w, pongo2.Context{
 		"periods":         periods,
-		"lts":             lts,
+		"transactions":    lts,
 		"balance":         lts[len(lts)-1].Balance,
 		"salary":          salary.Amount / 100,
 		"expenses":        expenses,
@@ -172,6 +196,8 @@ func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
 		a.errorResponse(w, r, 500, err.Error())
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(lts)
 }
@@ -222,4 +248,3 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 		"overview": overview,
 	})
 }
-
