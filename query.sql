@@ -2,6 +2,10 @@
 SELECT * FROM transactions
 WHERE id = ? LIMIT 1;
 
+-- name: GetTransaction2 :one
+SELECT t.*, (SELECT name from label where id = t.label_id) as label FROM transactions t
+WHERE t.id = ?;
+
 -- name: ListTransactions :many
 SELECT * FROM transactions
 ORDER BY date;
@@ -20,3 +24,9 @@ INSERT INTO transactions (
 -- name: DeleteTransaction :exec
 DELETE FROM transactions
 WHERE id = ?;
+
+-- name: ListLabels :many
+SELECT * FROM label;
+
+-- name: FindLabel :one
+SELECT * FROM label WHERE id = ?;

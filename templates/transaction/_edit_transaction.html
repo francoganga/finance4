@@ -1,0 +1,27 @@
+<div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Edit Transaction #{{transaction.ID}}</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+</div>
+<div class="offcanvas-body">
+    <div class="row">
+        <div class="col">
+            <select class="form-select" name="category" id="category">
+                {% for label in labels %}
+                    <option value="{{label.ID}}">{{label.Name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="dropdown mt-3">
+        <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+            Mercadopago
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {% for label in labels %}
+                <li><a class="dropdown-item" href="#">{{label.Name}}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+

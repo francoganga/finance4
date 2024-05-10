@@ -7,14 +7,7 @@ CREATE TABLE label (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE transaction_label (
-    id INTEGER PRIMARY KEY,
-    transaction_id INTEGER NOT NULL,
-    label_id INTEGER NOT NULL,
-    FOREIGN KEY(transaction_id) REFERENCES transactions(id),
-    FOREIGN KEY(label_id) REFERENCES label(id),
-    UNIQUE(transaction_id, label_id)
-);
+ALTER TABLE transactions ADD COLUMN label_id INTEGER;
 -- +goose StatementEnd
 
 -- +goose Down
@@ -23,5 +16,5 @@ DROP TABLE IF EXISTS label;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-DROP TABLE IF EXISTS transaction_label;
+ALTER TABLE transactions DROP COLUMN label_id;
 -- +goose StatementEnd

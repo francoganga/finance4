@@ -19,6 +19,7 @@ func (a *application) routes() *chi.Mux {
 	})
 	r.Get("/dashboard", a.Dashboard)
 	r.Get("/transactions/new", a.NewTransaction)
+	r.Get("/transactions/{id}/edit", a.EditTransaction)
 	r.Get("/month_overview/{period}", a.MonthOverview)
 	r.Post("/file", a.HandleFile)
 
@@ -34,4 +35,3 @@ func (a *application) routes() *chi.Mux {
 
 	return r
 }
-

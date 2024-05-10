@@ -49,8 +49,19 @@ func (q *Queries) DeleteTransaction(ctx context.Context, id int64) error {
 	return err
 }
 
+const findLabel = `-- name: FindLabel :one
+SELECT id, name FROM label WHERE id = ?
+`
+
+func (q *Queries) FindLabel(ctx context.Context, id int64) (Label, error) {
+	row := q.db.QueryRowContext(ctx, findLabel, id)
+	var i Label
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getTransaction = `-- name: GetTransaction :one
-SELECT id, date, code, description, amount, balance FROM transactions
+SELECT id, date, code, description, amount, balance, label_id FROM transactions
 WHERE id = ? LIMIT 1
 `
 
@@ -64,12 +75,45 @@ func (q *Queries) GetTransaction(ctx context.Context, id int64) (Transaction, er
 		&i.Description,
 		&i.Amount,
 		&i.Balance,
+		&i.LabelID,
+	)
+	return i, err
+}
+
+const getTransaction2 = `-- name: GetTransaction2 :one
+SELECT t.id, t.date, t.code, t.description, t.amount, t.balance, t.label_id, (SELECT name from label where id = t.label_id) as label FROM transactions t
+WHERE t.id = ?
+`
+
+type GetTransaction2Row struct {
+	ID          int64
+	Date        types.Date
+	Code        sql.NullString
+	Description string
+	Amount      int64
+	Balance     int64
+	LabelID     sql.NullInt64
+	Label       string
+}
+
+func (q *Queries) GetTransaction2(ctx context.Context, id int64) (GetTransaction2Row, error) {
+	row := q.db.QueryRowContext(ctx, getTransaction2, id)
+	var i GetTransaction2Row
+	err := row.Scan(
+		&i.ID,
+		&i.Date,
+		&i.Code,
+		&i.Description,
+		&i.Amount,
+		&i.Balance,
+		&i.LabelID,
+		&i.Label,
 	)
 	return i, err
 }
 
 const lastMonthTransactions = `-- name: LastMonthTransactions :many
-SELECT id, date, code, description, amount, balance FROM transactions WHERE strftime('%Y-%m', date) = (SELECT strftime('%Y-%m', date) FROM transactions order by date desc limit 1) ORDER BY id
+SELECT id, date, code, description, amount, balance, label_id FROM transactions WHERE strftime('%Y-%m', date) = (SELECT strftime('%Y-%m', date) FROM transactions order by date desc limit 1) ORDER BY id
 `
 
 func (q *Queries) LastMonthTransactions(ctx context.Context) ([]Transaction, error) {
@@ -88,6 +132,7 @@ func (q *Queries) LastMonthTransactions(ctx context.Context) ([]Transaction, err
 			&i.Description,
 			&i.Amount,
 			&i.Balance,
+			&i.LabelID,
 		); err != nil {
 			return nil, err
 		}
@@ -102,8 +147,35 @@ func (q *Queries) LastMonthTransactions(ctx context.Context) ([]Transaction, err
 	return items, nil
 }
 
+const listLabels = `-- name: ListLabels :many
+SELECT id, name FROM label
+`
+
+func (q *Queries) ListLabels(ctx context.Context) ([]Label, error) {
+	rows, err := q.db.QueryContext(ctx, listLabels)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Label
+	for rows.Next() {
+		var i Label
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactions = `-- name: ListTransactions :many
-SELECT id, date, code, description, amount, balance FROM transactions
+SELECT id, date, code, description, amount, balance, label_id FROM transactions
 ORDER BY date
 `
 
@@ -123,6 +195,7 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 			&i.Description,
 			&i.Amount,
 			&i.Balance,
+			&i.LabelID,
 		); err != nil {
 			return nil, err
 		}

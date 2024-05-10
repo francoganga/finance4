@@ -10,6 +10,11 @@ import (
 	types "finance/internal/types"
 )
 
+type Label struct {
+	ID   int64
+	Name string
+}
+
 type Transaction struct {
 	ID          int64
 	Date        types.Date
@@ -17,4 +22,5 @@ type Transaction struct {
 	Description string
 	Amount      int64
 	Balance     int64
+	LabelID     sql.NullInt64
 }

@@ -10,6 +10,7 @@ import (
 	"finance/internal/utils"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/flosch/pongo2/v6"
@@ -188,6 +189,35 @@ func (a *application) NewTransaction(w http.ResponseWriter, r *http.Request) {
 		a.errorResponse(w, r, 500, err.Error())
 	}
 
+}
+
+func (a *application) EditTransaction(w http.ResponseWriter, r *http.Request) {
+
+	param := chi.URLParam(r, "id")
+
+	id, err := strconv.ParseInt(param, 10, 64)
+
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	transaction, err := a.queries.GetTransaction2(r.Context(), id)
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	labels, err := a.queries.ListLabels(r.Context())
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	a.templates.Render("transaction/_edit_transaction.html", w, pongo2.Context{
+		"labels":      labels,
+		"transaction": transaction,
+	})
 }
 
 func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {

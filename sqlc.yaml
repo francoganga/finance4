@@ -7,6 +7,7 @@ sql:
       go:
         package: "models"
         out: "internal/models"
+        emit_pointers_for_null_types: true
         overrides:
           - column: "transactions.date"
             go_type:

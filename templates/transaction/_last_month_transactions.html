@@ -11,8 +11,10 @@
                 <div class="col-12 col-md-2 d-flex align-items-center">
                     <span>{{transaction.Code.String}}</span>
                 </div>
-                <div class="col-12 col-md-1 d-flex justify-content-end align-items-center">
-                    <span><i class="fas fa-ellipsis-vertical"></i></span>
+                <div hx-get="/transactions/{{transaction.ID}}/edit" hx-target="#offcanvasExample" class="col-12 col-md-1 d-flex justify-content-end align-items-center">
+                    <a class="text-dark" role="button" aria-controls="offcanvasExample">
+                        <i class="fas fa-ellipsis-vertical"></i>
+                    </a>
                 </div>
             </div>
         </div>
