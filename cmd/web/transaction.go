@@ -301,50 +301,58 @@ func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(lts)
 }
 
-func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
+func (a *application) ApiTransactions(w http.ResponseWriter, r *http.Request) {
+	period := r.URL.Query().Get("period")
 
-	period := chi.URLParam(r, "period")
+	transactions, err := services.SearchTransactions("", period, a.db)
 
-	if period == "" {
-		a.errorResponse(w, r, 500, "empty period")
-	}
-
-	query := "select * from transactions where strftime('%Y-%m', date) = ?"
-
-	rows, err := a.db.Query(query, period)
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
 		return
 	}
 
-	defer rows.Close()
+	w.Header().Set("Content-Type", "application/json")
 
-	var transactions []services.Transaction
+	json.NewEncoder(w).Encode(transactions)
+}
 
-	for rows.Next() {
-		var transaction services.Transaction
+func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 
-		err := rows.Scan(
-			&transaction.ID,
-			&transaction.Date,
-			&transaction.Code,
-			&transaction.Description,
-			&transaction.Amount,
-			&transaction.Balance,
-			&transaction.LabelID,
-		)
+	search := r.URL.Query().Get("search")
 
-		if err != nil {
-			a.errorResponse(w, r, 500, err.Error())
-			return
-		}
+	period := r.URL.Query().Get("period")
 
-		transactions = append(transactions, transaction)
+	transactions, err := services.SearchTransactions(search, period, a.db)
+
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	if hx := r.Header.Get("Hx-Request"); hx == "true" {
+
+		err = a.templates.Render("transaction/_last_month_transactions.html", w, pongo2.Context{
+			"transactions": transactions,
+			"search":       search,
+			"period":       period,
+		})
+
+		return
 	}
 
 	overview := services.GenerateOverview(transactions)
 
+	labels, err := a.queries.ListLabels(r.Context())
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
 	a.templates.Render("month_overview.html", w, pongo2.Context{
-		"overview": overview,
+		"overview":     overview,
+		"transactions": transactions,
+		"search":       search,
+		"period":       period,
+		"labels":       labels,
 	})
 }
