@@ -12,6 +12,20 @@ import (
 	types "finance/internal/types"
 )
 
+const addLabelToTransaction = `-- name: AddLabelToTransaction :exec
+UPDATE transactions SET label_id = ? WHERE id = ?
+`
+
+type AddLabelToTransactionParams struct {
+	LabelID sql.NullInt64
+	ID      int64
+}
+
+func (q *Queries) AddLabelToTransaction(ctx context.Context, arg AddLabelToTransactionParams) error {
+	_, err := q.db.ExecContext(ctx, addLabelToTransaction, arg.LabelID, arg.ID)
+	return err
+}
+
 const createTransaction = `-- name: CreateTransaction :exec
 INSERT INTO transactions (
   date, code, description, amount, balance
@@ -81,8 +95,7 @@ func (q *Queries) GetTransaction(ctx context.Context, id int64) (Transaction, er
 }
 
 const getTransaction2 = `-- name: GetTransaction2 :one
-SELECT t.id, t.date, t.code, t.description, t.amount, t.balance, t.label_id, (SELECT name from label where id = t.label_id) as label FROM transactions t
-WHERE t.id = ?
+SELECT t.id, t.date, t.code, t.description, t.amount, t.balance, t.label_id, l.name as label from transactions t LEFT JOIN label l on l.id = t.label_id where t.id = ?
 `
 
 type GetTransaction2Row struct {

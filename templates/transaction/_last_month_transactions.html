@@ -1,22 +1,3 @@
 {% for transaction in transactions %}
-    <li class="py-2">
-        <div class="d-flex py-3 border-bottom">
-            <div class="row w-100">
-                <div class="col-12 col-md-7 d-flex align-items-center">
-                    <span>{{transaction.Description}}</span>
-                </div>
-                <div class="col-12 col-md-2 d-flex align-items-center">
-                    <span>{{transaction.Amount}}</span>
-                </div>
-                <div class="col-12 col-md-2 d-flex align-items-center">
-                    <span>{{transaction.Code.String}}</span>
-                </div>
-                <div hx-get="/transactions/{{transaction.ID}}/edit" hx-target="#offcanvasExample" class="col-12 col-md-1 d-flex justify-content-end align-items-center">
-                    <a class="text-dark" role="button" aria-controls="offcanvasExample">
-                        <i class="fas fa-ellipsis-vertical"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </li>
+    {% include '_transaction.partial.html' %}
 {% endfor %}

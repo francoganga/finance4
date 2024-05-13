@@ -14,3 +14,7 @@ sql:
               import: "finance/internal/types"
               package: "types"
               type: "Date"
+          - column: "transactions.label"
+            go_type:
+              import: "database/sql"
+              type: "sql.NullString"

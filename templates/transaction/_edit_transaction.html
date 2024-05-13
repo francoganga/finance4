@@ -3,6 +3,7 @@
     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 </div>
 <div class="offcanvas-body">
+    {% comment %}
     <div class="row">
         <div class="col">
             <select class="form-select" name="category" id="category">
@@ -12,14 +13,21 @@
             </select>
         </div>
     </div>
+    {% endcomment %}
 
     <div class="dropdown mt-3">
         <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
-            Mercadopago
+            {% if transaction.Label %}
+                {{transaction.Label }}
+            {% else %}
+            No label selected
+            {% endif %}
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             {% for label in labels %}
-                <li><a class="dropdown-item" href="#">{{label.Name}}</a></li>
+                <li>
+                    <a hx-swap="outerHTML" hx-target="#transaction-{{transaction.ID}}" hx-vals='{"label_id": {{label.ID}}}' hx-patch="/transactions/{{transaction.ID}}/addLabel" class="dropdown-item" href="#">{{label.Name}}</a>
+                </li>
             {% endfor %}
         </ul>
     </div>

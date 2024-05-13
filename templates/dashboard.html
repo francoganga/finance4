@@ -19,7 +19,7 @@
                 <p>Remaining money: {{remainingAmount}}</p>
 
 
-                <div class="d-flex">
+                <div style="gap: 50px;" class="d-flex gap-10">
                     <div class="d-flex w-4/6 flex-column">
                         <div class="mt-4">
                             <canvas id="barChart"></canvas>
@@ -42,11 +42,14 @@
                                     hx-trigger="search, keyup delay:300ms changed"
                                     hx-target="#transaction-list"
                                     hx-push-url="true"
+                                    value="{{search}}"
                                 />
                             </form>
 
                             <ul class="list-unstyled" id="transaction-list">
-                                {% include 'transaction/_last_month_transactions.html' %}
+                                {% for transaction in transactions %}
+                                    {% include 'transaction/_transaction.partial.html' %}
+                                {% endfor %}
                             </ul>
 
 
@@ -76,27 +79,15 @@
 
         </div>
 
+        {% comment %}
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="offcanvasExampleLabel">Edit Transaction</h5>
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body">
-                <div>
-                    Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-                </div>
-                <div class="dropdown mt-3">
-                    <button class="btn btn-sm btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
-                        Dropdown button
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </div>
-            </div>
+            <div class="offcanvas-body"></div>
         </div>
+        {% endcomment %}
 
 
 
@@ -105,29 +96,28 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="/static/js/htmx.min.js"></script>
     <script src="/static/js/chartjs.js"></script>
     <script>
-        const ctx = document.getElementById('barChart');
+        window.ctx = document.getElementById('barChart');
 
         fetch('/api/lmt').then(res => res.json()).then(data => initChart(data))
 
-        const offcanvasEl = document.getElementById('offcanvasExample')
-        const offcanvas = new bootstrap.Offcanvas(offcanvasEl)
-        //window.offcanvas = offcanvas
+        // const offcanvasEl = document.getElementById('offcanvasExample')
+        // const offcanvas = new bootstrap.Offcanvas(offcanvasEl)
+        // window.offcanvas = offcanvas
 
-        htmx.on("htmx:afterSwap", () => {
-            offcanvas.toggle()
+        htmx.on("htmx:afterSwap", (e) => {
+            // if (e.detail.target.id == "offcanvasExample" || e.detail.target.classList.contains("transaction")) {
+            //     offcanvas.toggle()
+            // }
         })
 
 
 
         function initChart(data) {
-            console.log({data})
             const labels = data.map(item => item.Date);
             const vals = data.map(item => item.Balance/100);
-            console.log({vals})
-            new Chart(ctx, {
+            new Chart(window.ctx, {
                 type: 'line',
                 data: {
                     labels,

@@ -1,0 +1,33 @@
+<li id="transaction-{{transaction.ID}}" class="transaction py-2">
+    <div class="d-flex py-3 border-bottom">
+        <div class="row w-100 align-items-center">
+            <div class="col-12 col-md-5 d-flex align-items-center">
+                <span>{{transaction.Description}}</span>
+            </div>
+            <div class="col-12 col-md-2 d-flex align-items-center">
+                <span>{{transaction.Amount}}</span>
+            </div>
+            <div class="col-12 col-md-2 d-flex align-items-center">
+                <span>{{transaction.Code.String}}</span>
+            </div>
+            <div class="col-12 col-md-2">
+                <span class="badge bg-dark">{{transaction.Label}}</span>
+            </div>
+            <div class="dropdown mt-3 col-12 col-md-1 justify-content-end">
+                <div class="d-flex justify-content-end">
+                    <button style="background: none; border: none" class="text-dark" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+                        {% for label in labels %}
+                        <li>
+                            <a hx-swap="outerHTML" hx-target="#transaction-{{transaction.ID}}" hx-vals='{"label_id": {{label.ID}}}' hx-patch="/transactions/{{transaction.ID}}/addLabel" class="dropdown-item {% if transaction.LabelID.Int64 == label.ID %}active{% endif %}" href="#">{{label.Name}}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</li>

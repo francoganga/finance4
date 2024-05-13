@@ -93,6 +93,7 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 		err = a.templates.Render("transaction/_last_month_transactions.html", w, pongo2.Context{
 			"transactions": lmt,
+			"search":       search,
 		})
 
 		if err != nil {
@@ -150,21 +151,28 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	salary := lo.MaxBy(lts, func(a models.Transaction, b models.Transaction) bool {
+	salary := lo.MaxBy(lts, func(a services.Transaction, b services.Transaction) bool {
 		return a.Amount > b.Amount
 	})
 
-	expenses := lo.Filter(lts, func(i models.Transaction, _ int) bool {
+	expenses := lo.Filter(lts, func(i services.Transaction, _ int) bool {
 		return i.Amount < 0
 	})
 
-	totalExpenses := lo.SumBy(expenses, func(i models.Transaction) int64 {
+	totalExpenses := lo.SumBy(expenses, func(i services.Transaction) int64 {
 		return i.Amount
 	})
 
 	remainingAmount := salary.Amount + totalExpenses
 
+	labels, err := a.queries.ListLabels(r.Context())
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
 	a.templates.Render("dashboard.html", w, pongo2.Context{
+		"labels":          labels,
 		"periods":         periods,
 		"transactions":    lts,
 		"balance":         lts[len(lts)-1].Balance,
@@ -172,6 +180,7 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 		"expenses":        expenses,
 		"totalExpenses":   totalExpenses / 100,
 		"remainingAmount": remainingAmount / 100,
+		"search":          search,
 	})
 }
 
@@ -202,7 +211,7 @@ func (a *application) EditTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transaction, err := a.queries.GetTransaction2(r.Context(), id)
+	transaction, err := services.FindTransactionWithLabel(id, a.db)
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
 		return
@@ -218,6 +227,66 @@ func (a *application) EditTransaction(w http.ResponseWriter, r *http.Request) {
 		"labels":      labels,
 		"transaction": transaction,
 	})
+}
+
+func (a *application) AddLabel(w http.ResponseWriter, r *http.Request) {
+
+	param := chi.URLParam(r, "id")
+
+	id, err := strconv.ParseInt(param, 10, 64)
+
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	transaction, err := services.FindTransactionWithLabel(id, a.db)
+
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return
+		default:
+			a.errorResponse(w, r, 500, err.Error())
+			return
+		}
+	}
+
+	err = r.ParseForm()
+
+	if len(r.Form["label_id"]) < 1 {
+		a.errorResponse(w, r, 400, "Bad request")
+		return
+	}
+
+	labelId, err := strconv.ParseInt(r.Form["label_id"][0], 10, 64)
+
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	err = a.queries.AddLabelToTransaction(r.Context(), models.AddLabelToTransactionParams{
+		LabelID: sql.NullInt64{Valid: true, Int64: labelId},
+		ID:      id,
+	})
+
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	transaction, err = services.FindTransactionWithLabel(id, a.db)
+	if err != nil {
+		a.errorResponse(w, r, 500, err.Error())
+		return
+	}
+
+	a.templates.Render("transaction/_transaction.partial.html", w, pongo2.Context{
+		"transaction": transaction,
+	})
+
 }
 
 func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
@@ -250,10 +319,10 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var transactions []models.Transaction
+	var transactions []services.Transaction
 
 	for rows.Next() {
-		var transaction models.Transaction
+		var transaction services.Transaction
 
 		err := rows.Scan(
 			&transaction.ID,
@@ -262,6 +331,7 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 			&transaction.Description,
 			&transaction.Amount,
 			&transaction.Balance,
+			&transaction.LabelID,
 		)
 
 		if err != nil {

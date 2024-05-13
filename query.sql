@@ -3,8 +3,7 @@ SELECT * FROM transactions
 WHERE id = ? LIMIT 1;
 
 -- name: GetTransaction2 :one
-SELECT t.*, (SELECT name from label where id = t.label_id) as label FROM transactions t
-WHERE t.id = ?;
+SELECT t.*, l.name as label from transactions t LEFT JOIN label l on l.id = t.label_id where t.id = ?;
 
 -- name: ListTransactions :many
 SELECT * FROM transactions
@@ -30,3 +29,6 @@ SELECT * FROM label;
 
 -- name: FindLabel :one
 SELECT * FROM label WHERE id = ?;
+
+-- name: AddLabelToTransaction :exec
+UPDATE transactions SET label_id = ? WHERE id = ?;
