@@ -3,9 +3,12 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"finance/internal/services"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -74,4 +77,39 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	}
 
 	return nil
+}
+
+func readInt(qs url.Values, key string, defaultValue int) int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.Atoi(s)
+
+	if err != nil {
+		return defaultValue
+	}
+
+	return i
+}
+
+func parseOpts(qs url.Values) services.SearchOpts {
+
+	search := qs.Get("search")
+	period := qs.Get("period")
+	page := readInt(qs, "page", 1)
+
+	pageSize := readInt(qs, "page_size", 10)
+
+	opts := services.SearchOpts{}
+
+	opts.Search = search
+	opts.Period = period
+	opts.Page = page
+	opts.PageSize = pageSize
+
+	return opts
+
 }

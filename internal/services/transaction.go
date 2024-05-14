@@ -3,7 +3,6 @@ package services
 import (
 	"database/sql"
 	"finance/internal/models"
-	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -38,8 +37,6 @@ func GenerateOverview(transactions []Transaction) Overview {
 		return i.Amount
 	})
 
-	fmt.Printf("%d - %d\n", salary, totalExpenses)
-
 	return Overview{
 		Salary:          salary / 100,
 		Expenses:        totalExpenses / 100,
@@ -47,11 +44,31 @@ func GenerateOverview(transactions []Transaction) Overview {
 	}
 }
 
-func SearchTransactions(search string, month string, db *sql.DB) ([]Transaction, error) {
+type Filters struct {
+	Page     int
+	PageSize int
+}
+
+func (f Filters) Offset() int {
+	return (f.Page - 1) * f.PageSize
+}
+
+func (f Filters) Limit() int {
+	return f.PageSize
+}
+
+type SearchOpts struct {
+	Search string
+	Period string
+	Filters
+}
+
+func SearchTransactions(opts SearchOpts, db *sql.DB) ([]Transaction, error) {
 
 	rows, err := db.Query(`WITH lmt as (SELECT id, date, code, description, amount, balance, label_id FROM transactions WHERE (strftime('%Y-%m', date) = $3) OR ($3 = '')  ORDER BY id)
 
-		SELECT t.*, l.name as label from lmt t LEFT JOIN label l on l.id = t.label_id WHERE description like $1 OR amount = $2 OR code = $2 OR balance = $2 OR $2 = '';`, "%"+search+"%", search, month)
+		SELECT t.*, l.name as label from lmt t LEFT JOIN label l on l.id = t.label_id WHERE description like $1 OR amount = $2 OR code = $2 OR balance = $2 OR $2 = ''
+		LIMIT $4 OFFSET $5;`, "%"+opts.Search+"%", opts.Search, opts.Period, opts.Limit(), opts.Offset())
 
 	if err != nil {
 		return nil, err

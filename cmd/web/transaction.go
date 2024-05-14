@@ -302,9 +302,10 @@ func (a *application) Lmt(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *application) ApiTransactions(w http.ResponseWriter, r *http.Request) {
-	period := r.URL.Query().Get("period")
 
-	transactions, err := services.SearchTransactions("", period, a.db)
+	opts := parseOpts(r.URL.Query())
+
+	transactions, err := services.SearchTransactions(opts, a.db)
 
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
@@ -318,11 +319,9 @@ func (a *application) ApiTransactions(w http.ResponseWriter, r *http.Request) {
 
 func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 
-	search := r.URL.Query().Get("search")
+	opts := parseOpts(r.URL.Query())
 
-	period := r.URL.Query().Get("period")
-
-	transactions, err := services.SearchTransactions(search, period, a.db)
+	transactions, err := services.SearchTransactions(opts, a.db)
 
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
@@ -333,8 +332,8 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 
 		err = a.templates.Render("transaction/_last_month_transactions.html", w, pongo2.Context{
 			"transactions": transactions,
-			"search":       search,
-			"period":       period,
+			"search":       opts.Search,
+			"period":       opts.Period,
 		})
 
 		return
@@ -351,8 +350,8 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 	a.templates.Render("month_overview.html", w, pongo2.Context{
 		"overview":     overview,
 		"transactions": transactions,
-		"search":       search,
-		"period":       period,
+		"search":       opts.Search,
+		"period":       opts.Period,
 		"labels":       labels,
 	})
 }
