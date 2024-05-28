@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	financeLogger "finance/internal/logger"
 	"finance/internal/models"
 	"flag"
 	"fmt"
@@ -10,7 +11,10 @@ import (
 	"os"
 	"time"
 
+	"log/slog"
+
 	"github.com/francoganga/pongoe"
+	sqldblogger "github.com/simukti/sqldb-logger"
 	_ "modernc.org/sqlite"
 )
 
@@ -51,6 +55,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	lh := financeLogger.New(os.Stdout, nil)
+
+	loggerAdapter := financeLogger.NewSQLLogger(slog.New(lh))
+
+	db = sqldblogger.OpenDriver("file:app.db?cache=shared", db.Driver(), loggerAdapter)
+
+	err = db.Ping()
+
 	fmt.Println("opened db")
 
 	queries := models.New(db)
@@ -77,4 +89,3 @@ func main() {
 
 	logger.Fatal(err)
 }
-

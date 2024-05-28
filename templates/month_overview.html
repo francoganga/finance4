@@ -16,8 +16,8 @@
                 </div>
 
                 <p>Salary $&nbsp;{{overview.Salary}}</p>
-                <p>Total Expenses: {{overview.TotalExpenses}}</p>
-                <p>Remaining money: {{overview.RemainingAmount}}</p>
+                <p>Total Expenses: $&nbsp;{{overview.Expenses}}</p>
+                <p>Remaining money: $&nbsp;{{overview.RemainingAmount}}</p>
 
 
                 <div style="gap: 50px;" class="d-flex gap-10">
@@ -40,7 +40,7 @@
                                     type="search"
                                     style="font-family:arial, fontawesome"
 
-                                    hx-get="/month_overview?period={{period}}"
+                                    hx-get="/month_overview/{{period}}"
                                     hx-trigger="search, keyup delay:300ms changed"
                                     hx-target="#transaction-list"
                                     hx-push-url="true"
@@ -54,7 +54,9 @@
                                 {% endfor %}
                             </ul>
 
-
+                            <div id="pagination">
+                                {% include 'transaction/_pagination.partial.html' %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -81,61 +83,64 @@
 {% block scripts %}
     <script src="/static/js/chartjs.js"></script>
     <script>
-        window.ctx = document.getElementById('barChart');
 
-        const query = new URLSearchParams(window.location.search);
+        document.addEventListener("DOMContentLoaded", () => {
+            window.ctx = document.getElementById('barChart');
 
-        const month = query.get('period')
+            const query = new URLSearchParams(window.location.search);
+            const url = new URL(window.location.href);
 
-        fetch(`/api/transactions?period=${month}`).then(res => res.json()).then(data => initChart(data))
+            const month = url.pathname.split("/").pop()
 
-        // const offcanvasEl = document.getElementById('offcanvasExample')
-        // const offcanvas = new bootstrap.Offcanvas(offcanvasEl)
-        // window.offcanvas = offcanvas
+            fetch(`/api/transactions?period=${month}`).then(res => res.json()).then(data => initChart(data))
+            console.log("INITIALIZED CHART")
+
+            // const offcanvasEl = document.getElementById('offcanvasExample')
+            // const offcanvas = new bootstrap.Offcanvas(offcanvasEl)
+            // window.offcanvas = offcanvas
 
 
 
 
-        function initChart(data) {
-            const labels = data.map(item => item.Date);
-            const vals = data.map(item => item.Balance/100);
-            new Chart(window.ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Balance',
-                        data: vals,
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(75, 192, 192, 0.2)',
-                            'rgba(153, 102, 255, 0.2)',
-                            'rgba(255, 159, 64, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(256, 159, 64, 1)',
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
+            function initChart(data) {
+                const labels = data.map(item => item.Date);
+                const vals = data.map(item => item.Balance/100);
+                new Chart(window.ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Balance',
+                            data: vals,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(256, 159, 64, 1)',
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
-                }
-            });
-        }
-
-
+                });
+            }
+        })
     </script>
 {% endblock %}
 

@@ -21,7 +21,7 @@ func (a *application) routes() *chi.Mux {
 	r.Get("/transactions/new", a.NewTransaction)
 	r.Get("/transactions/{id}/edit", a.EditTransaction)
 	r.Patch("/transactions/{id}/addLabel", a.AddLabel)
-	r.Get("/month_overview", a.MonthOverview)
+	r.Get("/month_overview/{period}", a.MonthOverview)
 	r.Post("/file", a.HandleFile)
 
 	api := chi.NewRouter()

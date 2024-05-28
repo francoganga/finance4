@@ -319,27 +319,29 @@ func (a *application) ApiTransactions(w http.ResponseWriter, r *http.Request) {
 
 func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 
-	opts := parseOpts(r.URL.Query())
+	period := chi.URLParam(r, "period")
 
-	transactions, err := services.SearchTransactions(opts, a.db)
+	opts := parseOpts(r.URL.Query())
+	opts.Period = period
+
+	transactions, overview, metadata, err := services.SearchTransactions2(opts, a.db)
 
 	if err != nil {
 		a.errorResponse(w, r, 500, err.Error())
 		return
 	}
 
-	if hx := r.Header.Get("Hx-Request"); hx == "true" {
+	if trigger := r.Header.Get("Hx-Trigger-Name"); trigger == "search" {
 
 		err = a.templates.Render("transaction/_last_month_transactions.html", w, pongo2.Context{
 			"transactions": transactions,
 			"search":       opts.Search,
 			"period":       opts.Period,
+			"metadata":     metadata,
 		})
 
 		return
 	}
-
-	overview := services.GenerateOverview(transactions)
 
 	labels, err := a.queries.ListLabels(r.Context())
 	if err != nil {
@@ -353,5 +355,6 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 		"search":       opts.Search,
 		"period":       opts.Period,
 		"labels":       labels,
+		"metadata":     metadata,
 	})
 }

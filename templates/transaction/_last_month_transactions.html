@@ -1,3 +1,7 @@
 {% for transaction in transactions %}
     {% include '_transaction.partial.html' %}
 {% endfor %}
+
+<div id="pagination" hx-swap-oob="innerHTML">
+    {% include '_pagination.partial.html' %}
+</div>
