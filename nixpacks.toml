@@ -1,6 +1,5 @@
 [phases.build]
-nixPkgs = ["...", "poppler_utils"] # Install the ffmpeg package from Nix
-cmds = ["go build -o out ./cmd/web", "./out migrate"]
+cmds = ["go build -o out ./cmd/web", "./out migrate", "apt update && apt install -y poppler-utils"]
 
 [start]
 cmd = "./out serve"
