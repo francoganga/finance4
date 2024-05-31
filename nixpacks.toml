@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["...", "poppler"] # Install the ffmpeg package from Nix
+nixPkgs = ["...", "poppler_utils"] # Install the ffmpeg package from Nix
