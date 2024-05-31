@@ -5,7 +5,6 @@ go 1.21.0
 require (
 	github.com/flosch/pongo2/v6 v6.0.0
 	github.com/francoganga/pongoe v0.1.2
-	github.com/francoganga/ulari v0.1.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/render v1.0.3
 	github.com/matryer/is v1.4.1
@@ -41,7 +40,3 @@ require (
 	modernc.org/strutil v1.2.0 // indirect
 	modernc.org/token v1.1.0 // indirect
 )
-
-replace github.com/francoganga/pongoe => /home/fganga/projects/personal/pongoe
-
-replace github.com/francoganga/ulari => /home/fganga/projects/personal/ulari

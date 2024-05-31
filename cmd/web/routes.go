@@ -18,7 +18,6 @@ func (a *application) routes() *chi.Mux {
 		a.templates.Render("home.html", w, nil)
 	})
 	r.Get("/dashboard", a.Dashboard)
-	r.Get("/transactions/new", a.NewTransaction)
 	r.Get("/transactions/{id}/edit", a.EditTransaction)
 	r.Patch("/transactions/{id}/addLabel", a.AddLabel)
 	r.Get("/month_overview/{period}", a.MonthOverview)
@@ -37,3 +36,4 @@ func (a *application) routes() *chi.Mux {
 
 	return r
 }
+

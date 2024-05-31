@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/flosch/pongo2/v6"
-	"github.com/francoganga/ulari"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/samber/lo"
@@ -184,22 +183,6 @@ func (a *application) Dashboard(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (a *application) NewTransaction(w http.ResponseWriter, r *http.Request) {
-
-	form := ulari.NewFormData()
-	now := time.Now().Format("2006-01-02")
-
-	form.Add(ulari.DateField("date", now, "p-2", "border", "border-gray-300"))
-	form.Add(ulari.StringField("name", "p-2", "border", "border-red-500", "focus:border-sky-400"))
-
-	if err := a.templates.Render("transaction/new.html", w, pongo2.Context{
-		"form": form,
-	}); err != nil {
-		a.errorResponse(w, r, 500, err.Error())
-	}
-
-}
-
 func (a *application) EditTransaction(w http.ResponseWriter, r *http.Request) {
 
 	param := chi.URLParam(r, "id")
@@ -358,3 +341,4 @@ func (a *application) MonthOverview(w http.ResponseWriter, r *http.Request) {
 		"metadata":     metadata,
 	})
 }
+
