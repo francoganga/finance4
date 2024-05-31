@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	financeLogger "finance/internal/logger"
 	"finance/internal/models"
+	"finance/migrations"
 	"flag"
 	"fmt"
 	"log"
@@ -14,6 +15,7 @@ import (
 	"log/slog"
 
 	"github.com/francoganga/pongoe"
+	"github.com/pressly/goose/v3"
 	sqldblogger "github.com/simukti/sqldb-logger"
 	_ "modernc.org/sqlite"
 )
@@ -35,15 +37,30 @@ type application struct {
 }
 
 func main() {
-
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 4000, "API server port")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
+	serveCmd := flag.NewFlagSet("serve", flag.ExitOnError)
+	serveCmd.IntVar(&cfg.port, "port", 4000, "API server port")
+	serveCmd.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "PostgreSQL DSN")
 
-	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "PostgreSQL DSN")
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(1)
+	}
 
-	flag.Parse()
+	switch os.Args[1] {
+	case "serve":
+		serveCmd.Parse(os.Args[2:])
+		serve(cfg)
+	case "migrate":
+		migrate()
+	default:
+		log.Fatalf("unknown command %q", os.Args[1])
+	}
+
+}
+
+func serve(cfg config) {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
@@ -88,4 +105,30 @@ func main() {
 	err = srv.ListenAndServe()
 
 	logger.Fatal(err)
+
 }
+
+func migrate() {
+	goose.SetBaseFS(migrations.GetMigrations())
+
+	if err := goose.SetDialect("sqlite"); err != nil {
+		panic(err)
+	}
+
+	db, err := sql.Open("sqlite", "file:app.db?cache=shared")
+
+	if err != nil {
+		panic(err)
+	}
+
+	if err := goose.Up(db, "."); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("migrated db successfully")
+}
+
+func usage() {
+	fmt.Fprint(os.Stderr, "usage: <exe> [-port port] [-env env] [-db-dsn dsn]\n")
+}
+
