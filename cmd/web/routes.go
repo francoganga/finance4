@@ -1,6 +1,7 @@
 package main
 
 import (
+	assets "finance/public"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,7 +11,7 @@ import (
 func (a *application) routes() *chi.Mux {
 	r := chi.NewRouter()
 
-	fs := http.FileServer(http.Dir("./public"))
+	fs := http.FileServer(http.FS(assets.GetAssets()))
 
 	r.Use(middleware.Logger)
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))

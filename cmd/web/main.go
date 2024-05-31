@@ -5,6 +5,7 @@ import (
 	financeLogger "finance/internal/logger"
 	"finance/internal/models"
 	"finance/migrations"
+	"finance/templates"
 	"flag"
 	"fmt"
 	"log"
@@ -64,7 +65,7 @@ func serve(cfg config) {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	tts := pongoe.LoadTemplates("templates")
+	tts := pongoe.LoadTemplatesFS(templates.GetTemplates())
 
 	db, err := sql.Open("sqlite", "file:app.db?cache=shared")
 

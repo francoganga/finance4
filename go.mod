@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/flosch/pongo2/v6 v6.0.0
-	github.com/francoganga/pongoe v0.1.2
+	github.com/francoganga/pongoe v0.1.4
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/render v1.0.3
 	github.com/matryer/is v1.4.1

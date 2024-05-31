@@ -8,8 +8,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/flosch/pongo2/v6 v6.0.0 h1:lsGru8IAzHgIAw6H2m4PCyleO58I40ow6apih0WprMU=
 github.com/flosch/pongo2/v6 v6.0.0/go.mod h1:CuDpFm47R0uGGE7z13/tTlt1Y6zdxvr2RLT5LJhsHEU=
-github.com/francoganga/pongoe v0.1.2 h1:E/PhZ8vRu7JycScI65O0oHVAMyyXutiI+EFFs7q3GVo=
-github.com/francoganga/pongoe v0.1.2/go.mod h1:HkbNC+9xP36BriO5J/9Mshka83mXFNR43nR7r1raw78=
+github.com/francoganga/pongoe v0.1.4 h1:Yw/ZUmoJbB9cA4uTfLEeb5kg2QdRf6WL2vpukJhGK9s=
+github.com/francoganga/pongoe v0.1.4/go.mod h1:HkbNC+9xP36BriO5J/9Mshka83mXFNR43nR7r1raw78=
 github.com/go-chi/chi/v5 v5.0.10 h1:rLz5avzKpjqxrYwXNfmjkrYYXOyLJd37pz53UFHC6vk=
 github.com/go-chi/chi/v5 v5.0.10/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/go-chi/render v1.0.3 h1:AsXqd2a1/INaIfUSKq3G5uA8weYx20FOsM7uSoCyyt4=
