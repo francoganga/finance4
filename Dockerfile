@@ -13,7 +13,7 @@ RUN go build -o /go/bin/myapp ./cmd/web
 
 FROM golang:alpine
 
-RUN apk add --no-cache poppler
+RUN apk add --no-cache poppler-utils
 
 WORKDIR /go/bin
 
