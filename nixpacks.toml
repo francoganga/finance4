@@ -1,5 +1,8 @@
+[phases.setup]
+nixLibs = ["poppler_utils"]
+
 [phases.build]
-cmds = ["go build -o out ./cmd/web", "./out migrate", "apt update && apt install -y poppler-utils"]
+cmds = ["go build -o out ./cmd/web", "./out migrate"]
 
 [start]
 cmd = "./out serve"
