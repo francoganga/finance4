@@ -37,7 +37,7 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 		matches, err := utils.GetMatchesFromFile(file)
 
 		if err != nil {
-			a.errorResponse(w, r, 500, "Error")
+			http.Error(w, fmt.Sprintf("Error: %s", err.Error()), 500)
 			return
 		}
 
@@ -46,7 +46,7 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 			consu, err := p.Parse()
 			if err != nil {
-				a.errorResponse(w, r, 500, "Error")
+				http.Error(w, fmt.Sprintf("Error: %s", err.Error()), 500)
 				return
 			}
 
@@ -54,7 +54,7 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				a.logError(r, err)
-				a.errorResponse(w, r, 500, "Error")
+				http.Error(w, fmt.Sprintf("Error: %s", err.Error()), 500)
 				return
 			}
 
@@ -67,7 +67,7 @@ func (a *application) HandleFile(w http.ResponseWriter, r *http.Request) {
 			})
 
 			if err != nil {
-				a.errorResponse(w, r, 500, "Error")
+				http.Error(w, fmt.Sprintf("Error: %s", err.Error()), 500)
 				return
 			}
 		}
