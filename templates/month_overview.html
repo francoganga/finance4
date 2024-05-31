@@ -102,44 +102,42 @@
 
 
 
-            function initChart(data) {
-                const labels = data.map(item => item.Date);
-                const vals = data.map(item => item.Balance/100);
-                new Chart(window.ctx, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [{
-                            label: 'Balance',
-                            data: vals,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(256, 159, 64, 1)',
-                            ],
-                            borderWidth: 1
-                        }]
+        function initChart(data) {
+            const labels = data.map(item => item.Date);
+            const vals = data.map(item => item.Balance/100);
+            new Chart(window.ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: vals,
+                        backgroundColor: [
+                            'rgba(220, 53, 69, 1)',
+                        ],
+                        borderColor: [
+                            'rgba(220, 53, 69, 1)',
+                        ],
+                        tension: 0.1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            display: false
+                        }
                     },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     }
-                });
-            }
+                }
+            });
+        }
         })
     </script>
 {% endblock %}
